@@ -17,6 +17,31 @@ import {
 
 const getApp = () => document.getElementById('app')!;
 const getState = () => store.getState().chat;
+let isWindowDropEventsBound = false;
+
+function getDropOverlay() {
+    return document.getElementById('drop-overlay');
+}
+
+function handleWindowDragOver(e: DragEvent) {
+    e.preventDefault();
+    getDropOverlay()?.classList.add('active');
+}
+
+function handleWindowDragLeave(e: DragEvent) {
+    if (e.relatedTarget === null) {
+        getDropOverlay()?.classList.remove('active');
+    }
+}
+
+function handleWindowDrop(e: DragEvent) {
+    e.preventDefault();
+    getDropOverlay()?.classList.remove('active');
+    const files = e.dataTransfer?.files;
+    if (files) {
+        Array.from(files).forEach(handleFileUpload);
+    }
+}
 
 function render() {
     const state = getState();
@@ -269,27 +294,13 @@ function bindEvents() {
         );
     });
 
-    // Drag and Drop events
-    const dropOverlay = document.getElementById('drop-overlay');
-    window.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropOverlay?.classList.add('active');
-    }, { once: true });
-
-    window.addEventListener('dragleave', (e) => {
-        if (e.relatedTarget === null) {
-            dropOverlay?.classList.remove('active');
-        }
-    }, { once: true });
-
-    window.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropOverlay?.classList.remove('active');
-        const files = e.dataTransfer?.files;
-        if (files) {
-            Array.from(files).forEach(handleFileUpload);
-        }
-    }, { once: true });
+    // Bind global drag and drop listeners once; render() is called often.
+    if (!isWindowDropEventsBound) {
+        window.addEventListener('dragover', handleWindowDragOver);
+        window.addEventListener('dragleave', handleWindowDragLeave);
+        window.addEventListener('drop', handleWindowDrop);
+        isWindowDropEventsBound = true;
+    }
 }
 
 let controller: AbortController | null = null;
