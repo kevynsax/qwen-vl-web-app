@@ -274,13 +274,13 @@ function bindEvents() {
     window.addEventListener('dragover', (e) => {
         e.preventDefault();
         dropOverlay?.classList.add('active');
-    });
+    }, { once: true });
 
     window.addEventListener('dragleave', (e) => {
         if (e.relatedTarget === null) {
             dropOverlay?.classList.remove('active');
         }
-    });
+    }, { once: true });
 
     window.addEventListener('drop', (e) => {
         e.preventDefault();
@@ -289,7 +289,7 @@ function bindEvents() {
         if (files) {
             Array.from(files).forEach(handleFileUpload);
         }
-    });
+    }, { once: true });
 }
 
 let controller: AbortController | null = null;
